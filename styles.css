@@ -148,19 +148,6 @@ a:hover { color: var(--accent); }
 }
 .site-footer a:hover { color: var(--accent); }
 
-.visit-section {
-  background: var(--dark);
-  padding: 1rem 0;
-  text-align: center;
-}
-
-.visit-counter {
-  color: #ccc;
-  font-size: 1.1rem;
-  opacity: 0.85;
-}
-
-
 .section-title {
   text-align: center;
   font-size: 2rem;
