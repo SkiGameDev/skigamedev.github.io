@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Notizie | SkiGameDev</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="site-header">
+  <a href="index.html" class="logo">
+    <img src="https://i.ibb.co/chrVtVMg/skigamedev-piccola.png" alt="Logo">
+  </a>
+  <nav class="main-nav">
+    <a href="index.html">Home</a>
+  </nav>
+</header>
+
+<section class="news-section">
+  <h2 class="section-title">📰 Tutte le Notizie</h2>
+  <div id="news-list" class="news-list">Caricamento notizie...</div>
+</section>
+
+<footer class="site-footer">
+  <p>&copy; 2025 Marco – SkiGameDev</p>
+</footer>
+
+<script>
+fetch('news.json')
+  .then(res => res.json())
+  .then(news => {
+    const newsList = document.getElementById('news-list');
+    newsList.innerHTML = '';
+    news.forEach(item => {
+      const date = new Date(item.date).toLocaleDateString('it-IT');
+      const article = document.createElement('div');
+      article.className = 'news-item';
+      article.innerHTML = `
+        <h3>${item.title}</h3>
+        <p class="date">${date}</p>
+        <p>${item.text}</p>
+        <a href="${item.url}" class="share-button" target="_blank">Condividi</a>
+      `;
+      newsList.appendChild(article);
+    });
+  });
+</script>
+
+</body>
+</html>
