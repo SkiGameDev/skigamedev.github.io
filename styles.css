@@ -1,0 +1,109 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600&display=swap');
+
+:root {
+  --bg: #0a0a0f;
+  --dark: #12121d;
+  --blue: #1f6feb;
+  --light-blue: #3a8ee6;
+  --text-light: #e3e3e3;
+  --accent: #3a8ee6;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg);
+  color: var(--text-light);
+  font-family: 'Nunito', sans-serif;
+  line-height:1.6;
+}
+a { text-decoration:none; color: var(--light-blue); }
+
+.site-header {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:1rem 2rem; background: var(--dark);
+  position:sticky; top:0; z-index:10;
+}
+.logo img { max-height:60px; }
+.main-nav a {
+  margin-left:1.5rem;
+  font-weight:600;
+  transition: color .3s;
+}
+.main-nav a:hover { color: var(--blue); }
+
+.hero {
+  display:flex; flex-wrap:wrap-reverse;
+  align-items:center;
+  padding:3rem 2rem;
+}
+.intro { flex:1 1 350px; padding-right:2rem; }
+.intro h1 span { color: var(--accent); }
+.btn {
+  display:inline-block; padding:.75rem 1.5rem;
+  border-radius:30px; font-weight:600;
+  transition: background .3s, color .3s;
+  margin-top:1rem;
+}
+.btn-primary {
+  background: var(--blue);
+  color:#fff;
+}
+.btn-primary:hover {
+  background: var(--light-blue);
+}
+.btn-secondary {
+  background: transparent;
+  border:2px solid var(--accent);
+  color: var(--accent);
+}
+.btn-secondary:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.hero-img img { max-width:100%; height:auto; border-radius:10px; }
+
+.projects {
+  padding:2rem; background: var(--dark);
+}
+.projects h2 {
+  font-size:2rem;
+  margin-bottom:1.5rem;
+}
+.project-item {
+  display:flex; flex-wrap:wrap;
+  background: var(--dark);
+  margin-bottom:2rem;
+  border-radius:10px;
+  overflow:hidden;
+  box-shadow:0 4px 12px rgba(0,0,0,0.5);
+}
+.project-item img {
+  flex:1 1 300px; width:100%; height:auto;
+}
+.project-info {
+  flex:1 1 300px; padding:1.5rem;
+}
+.project-info h3 {
+  margin-bottom:.75rem;
+  color: var(--light-blue);
+}
+.project-info p {
+  margin-bottom:1rem;
+}
+
+.site-footer {
+  background: var(--dark);
+  text-align:center;
+  padding:2rem;
+  color: var(--text-light);
+}
+.site-footer a:hover {
+  color: var(--blue);
+}
+
+@media(max-width:768px){
+  .hero { flex-direction:column; }
+  .hero .intro { padding-right:0; }
+  .project-item { flex-direction:column; }
+}
