@@ -6,7 +6,6 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
   });
 });
 
-<script src="https://cdn.jsdelivr.net/npm/counterapi/dist/counter.browser.min.js"></script>
 <script>
   document.addEventListener("DOMContentLoaded", () => {
     const counter = new Counter({
