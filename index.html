@@ -19,6 +19,24 @@
   <title>SkiGameDev</title>
   <link rel="stylesheet" href="styles.css">
 </head>
+
+  <script src="https://cdn.jsdelivr.net/npm/counterapi/dist/counter.browser.min.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const counter = new Counter({
+      version: "v2",
+      accessToken: "ut_ZDQTgh00QHkid6XIc9xQx0EaDuSTqt8oFlfO7ZY7"
+    });
+
+    counter.up("skigamedev-home").then(res => {
+      document.getElementById("visit-count").innerText = res.value;
+    }).catch(err => {
+      console.error("Errore nel contatore", err);
+      document.getElementById("visit-count").innerText = "—";
+    });
+  });
+</script>
+
 <body>
 
 <header class="site-header">
