@@ -20,26 +20,6 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 
-<script src="https://cdn.jsdelivr.net/npm/counterapi/dist/counter.browser.min.js"></script>
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const counter = new Counter({
-      version: "v2",
-      accessToken: "ut_ZDQTgh00QHkid6XIc9xQx0EaDuSTqt8oFlfO7ZY7",
-      workspace: "SkiGameDev"
-    });
-
-    counter.up("skigamedev-home")
-      .then(res => {
-        document.getElementById("visit-count").innerText = res.value;
-      })
-      .catch(err => {
-        console.error("Errore nel contatore:", err);
-        document.getElementById("visit-count").innerText = "—";
-      });
-  });
-</script>
-
 
 <body>
 
@@ -89,14 +69,6 @@
     </div>
   </div>
 </section>
-
-<section class="visit-section">
-  <p class="visit-counter">
-    👁️ Visite totali: <span id="visit-count">caricamento...</span>
-  </p>
-</section>
-
-
 
 <footer id="contact" class="site-footer">
   <h2>Contatti</h2>
