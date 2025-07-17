@@ -6,22 +6,6 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
   });
 });
 
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const counter = new Counter({
-      version: "v2",
-      accessToken: "ut_ZDQTgh00QHkid6XIc9xQx0EaDuSTqt8oFlfO7ZY7" // ← usa il tuo token completo qui
-    });
-
-    counter.up("skigamedev-home").then(res => {
-      document.getElementById("visit-count").innerText = res.value;
-    }).catch(err => {
-      console.error("Errore nel contatore", err);
-      document.getElementById("visit-count").innerText = "—";
-    });
-  });
-</script>
-
 
 fetch('news.json')
   .then(res => res.json())
