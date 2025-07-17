@@ -29,6 +29,6 @@ fetch('news.json')
         <h3>${latest.title}</h3>
         <p class="date">${date}</p>
         <p>${latest.text}</p>
-        <a href="${latest.url}" class="share-button" target="_blank">Condividi</a>
+        <a href="${latest.url}" class="share-button" target="_blank">Visualizza</a>
       </div>`;
   });
