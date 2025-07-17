@@ -148,6 +148,15 @@ a:hover { color: var(--accent); }
 }
 .site-footer a:hover { color: var(--accent); }
 
+.visit-counter {
+  text-align: center;
+  font-size: 1rem;
+  padding: 1.5rem 0;
+  color: #ccc;
+  opacity: 0.8;
+}
+
+
 /* Responsive */
 @media (max-width:768px) {
   .project-card { flex-direction:column; text-align:center; }
