@@ -7,7 +7,7 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
 });
 
 // ID univoco del tuo sito o pagina
-const counterKey = "skigamedev-home";
+const counterKey = "SkiGameDev";
 
 // Richiesta a CounterAPI
 fetch("https://api.counterapi.dev/v1/hit/" + counterKey + "?token=ut_ZDQTgh00QHkid6XIc9xQx0EaDuSTqt8oFlfO7ZY7")
