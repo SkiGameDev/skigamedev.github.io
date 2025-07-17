@@ -19,26 +19,16 @@ fetch("https://api.counterapi.dev/v1/hit/" + counterKey + "?token=ut_ZDQTgh00QHk
     document.getElementById("visit-count").innerText = "–";
   });
 
-// Caricamento notizie da JSON
 fetch('news.json')
   .then(res => res.json())
   .then(news => {
-    const newsList = document.getElementById('news-list');
-    newsList.innerHTML = '';
-
-    news.forEach(item => {
-      const date = new Date(item.date).toLocaleDateString('it-IT');
-      const article = document.createElement('div');
-      article.className = 'news-item';
-      article.innerHTML = `
-        <h3>${item.title}</h3>
+    const latest = news[0];
+    const date = new Date(latest.date).toLocaleDateString('it-IT');
+    document.getElementById('latest-news').innerHTML = `
+      <div class="news-item">
+        <h3>${latest.title}</h3>
         <p class="date">${date}</p>
-        <p>${item.text}</p>
-        <a href="${item.url}" class="share-button" target="_blank">Condividi</a>
-      `;
-      newsList.appendChild(article);
-    });
-  })
-  .catch(() => {
-    document.getElementById('news-list').innerText = "Errore nel caricamento notizie.";
+        <p>${latest.text}</p>
+        <a href="${latest.url}" class="share-button" target="_blank">Condividi</a>
+      </div>`;
   });
