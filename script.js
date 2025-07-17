@@ -6,18 +6,23 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
   });
 });
 
-// ID univoco del tuo sito o pagina
-const counterKey = "SkiGameDev";
+<script src="https://cdn.jsdelivr.net/npm/counterapi/dist/counter.browser.min.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const counter = new Counter({
+      version: "v2",
+      accessToken: "ut_ZDQTgh00QHkid6XIc9xQx0EaDuSTqt8oFlfO7ZY7" // ← usa il tuo token completo qui
+    });
 
-// Richiesta a CounterAPI
-fetch("https://api.counterapi.dev/v1/hit/" + counterKey + "?token=ut_ZDQTgh00QHkid6XIc9xQx0EaDuSTqt8oFlfO7ZY7")
-  .then(r => r.json())
-  .then(data => {
-    document.getElementById("visit-count").innerText = data.value;
-  })
-  .catch(() => {
-    document.getElementById("visit-count").innerText = "–";
+    counter.up("skigamedev-home").then(res => {
+      document.getElementById("visit-count").innerText = res.value;
+    }).catch(err => {
+      console.error("Errore nel contatore", err);
+      document.getElementById("visit-count").innerText = "—";
+    });
   });
+</script>
+
 
 fetch('news.json')
   .then(res => res.json())
