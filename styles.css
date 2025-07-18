@@ -191,6 +191,42 @@ a:hover { color: var(--accent); }
   margin-top: 1rem;
 }
 
+.alpha-download {
+  background-color: #1f1f1f; /* stesso fondo di progetti */
+  color: #fff;
+  padding: 40px 20px;
+  text-align: center;
+  border-radius: 12px;
+  margin: 50px auto;
+  max-width: 800px;
+}
+
+.alpha-download h2 {
+  font-size: 1.8em;
+  margin-bottom: 15px;
+}
+
+.alpha-download p {
+  font-size: 1.1em;
+  margin-bottom: 25px;
+}
+
+.alpha-download a.download-btn {
+  display: inline-block;
+  padding: 12px 24px;
+  background-color: #00aaff;
+  color: white;
+  font-weight: bold;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+}
+
+.alpha-download a.download-btn:hover {
+  background-color: #0077cc;
+}
+
+
 /* Responsive */
 @media (max-width:768px) {
   .project-card { flex-direction:column; text-align:center; }
