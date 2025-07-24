@@ -137,12 +137,6 @@
     let highScore = parseInt(localStorage.getItem("highScore_snake") || "0");
     highScoreEl.textContent = highScore;
 
-      function backToMenu() {
-      gameContainer.style.display = "none";
-      clearInterval(window.snakeLoop);
-      window.location.href = "index.html";
-    }
-
     function startSnake() {
 	overlay.style.display = "none";
       clearInterval(window.snakeLoop);
@@ -221,6 +215,12 @@
     }
 	
 	startSnake();
+
+	      document.addEventListener("keydown", function(e) {
+      if (e.key === "Escape") {
+        window.location.href = "index.html"; // carica index.html dallo stesso progetto
+      }
+    });
   </script>
 </body>
 </html>
