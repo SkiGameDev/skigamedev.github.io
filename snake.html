@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>SkiStation2000 – Snake</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: linear-gradient(135deg, #0a0a0a, #1a1a1a);
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
+    }
+
+    .game-container {
+      position: relative;
+      margin-top: 50px;
+    }
+
+    canvas {
+      background: #222;
+      border: 3px solid #00c7ff;
+      border-radius: 6px;
+      display: block;
+    }
+
+    #overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      background-color: rgba(0,0,0,0.85);
+      padding: 30px 50px;
+      border-radius: 12px;
+      border: 2px solid #00c7ff;
+      z-index: 10;
+      box-shadow: 0 0 20px #00c7ff;
+    }
+
+    #overlay h2 {
+      font-size: 22px;
+      color: #ff4d4d;
+      text-shadow: 0 0 6px red;
+      margin-bottom: 15px;
+    }
+
+    #restartBtn {
+      padding: 10px 20px;
+      background: #00c7ff;
+      color: black;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #restartBtn:hover {
+      background: #009ed4;
+    }
+
+    #scoreBoard {
+      text-align: center;
+      font-size: 18px;
+      color: #00c7ff;
+      text-shadow: 0 0 4px #00c7ff;
+      margin-top: 15px;
+    }
+	
+	#gameOverScreen {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(0, 0, 0, 0.9);
+      border: 2px solid #00c7ff;
+      border-radius: 10px;
+      padding: 20px 30px;
+      z-index: 10;
+      box-shadow: 0 0 20px #00c7ff;
+      text-align: center;
+    }
+    #gameOverScreen div {
+      font-size: 22px;
+      color: #ff4d4d;
+      text-shadow: 0 0 6px red;
+      margin-bottom: 15px;
+    }
+	
+	#controlsHelp {
+	  font-size: 14px;
+	  color: #ccc;
+	  margin-top: 5px;
+	  text-align: center;
+	  font-family: monospace;
+	}
+
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <canvas id="pongCanvas" width="500" height="400"></canvas>
+
+    <div id="overlay">
+      <h2>Game Over</h2>
+      <button id="restartBtn" onclick="startSnake()">Ricomincia</button>
+    </div>
+  </div>
+
+  <div id="scoreBoard">
+    Punteggio: <span id="score">0</span> | Migliore: <span id="highScore">0</span>
+  </div>
+  
+	
+	    <div id="controlsHelp">
+  Comandi: A = Sinistra | W = Su' | S = Giu' | D = Destra
+  </div>
+
+  <script>
+    const canvas = document.getElementById("pongCanvas");
+    const ctx = canvas.getContext("2d");
+    const overlay = document.getElementById("overlay");
+    const scoreEl = document.getElementById("score");
+    const highScoreEl = document.getElementById("highScore");
+
+    let player, ai, ball, keys, loop;
+    let score = 0;
+    let highScore = parseInt(localStorage.getItem("highScore_snake") || "0");
+    highScoreEl.textContent = highScore;
+
+    function startSnake() {
+	overlay.style.display = "none";
+      clearInterval(window.snakeLoop);
+      const box = 20;
+      const rows = canvas.height / box;
+      const cols = canvas.width / box;
+      let snake = [{ x: 9 * box, y: 9 * box }];
+      let food = spawnFood();
+      let direction = "RIGHT";
+      score = 0;
+      scoreEl.textContent = 0;
+	  
+	        if (loop) cancelAnimationFrame(loop);
+      requestAnimationFrame(draw);
+
+      function spawnFood() {
+        return {
+          x: Math.floor(Math.random() * cols) * box,
+          y: Math.floor(Math.random() * rows) * box,
+        };
+      }
+
+      document.onkeydown = function (e) {
+        const key = e.key.toLowerCase();
+        if ((key === "a" || e.keyCode === 37) && direction !== "RIGHT") direction = "LEFT";
+        else if ((key === "w" || e.keyCode === 38) && direction !== "DOWN") direction = "UP";
+        else if ((key === "d" || e.keyCode === 39) && direction !== "LEFT") direction = "RIGHT";
+        else if ((key === "s" || e.keyCode === 40) && direction !== "UP") direction = "DOWN";
+      };
+
+      function draw() {
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (let i = 0; i < snake.length; i++) {
+          ctx.fillStyle = i === 0 ? "#00c7ff" : "#0ff";
+          ctx.fillRect(snake[i].x, snake[i].y, box, box);
+        }
+
+        ctx.fillStyle = "red";
+        ctx.fillRect(food.x, food.y, box, box);
+
+        let head = { ...snake[0] };
+        if (direction == "LEFT") head.x -= box;
+        if (direction == "UP") head.y -= box;
+        if (direction == "RIGHT") head.x += box;
+        if (direction == "DOWN") head.y += box;
+
+        if (
+          head.x < 0 || head.y < 0 ||
+          head.x >= canvas.width || head.y >= canvas.height ||
+          snake.some((s, i) => i > 0 && s.x === head.x && s.y === head.y)
+        ) {
+			overlay.style.display = "block";
+			return;
+        }
+
+        snake.unshift(head);
+
+        if (head.x === food.x && head.y === food.y) {
+          food = spawnFood();
+          score++;
+          document.getElementById("score").textContent = score;
+
+        if (score > highScore) {
+          highScore = score;
+          localStorage.setItem("highScore_snake", highScore);
+          highScoreEl.textContent = highScore;
+        }
+        } else {
+          snake.pop();
+        }
+      }
+
+      window.snakeLoop = setInterval(draw, 100);
+    }
+	
+	startSnake();
+  </script>
+</body>
+</html>
