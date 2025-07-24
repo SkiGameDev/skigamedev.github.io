@@ -119,7 +119,7 @@
   <div id="scoreBoard">
     Punteggio: <span id="score">0</span> | Migliore: <span id="highScore">0</span>
   </div>
-  
+      <div id="backMsg">Premi ESC per tornare al menu</div>
 	
 	    <div id="controlsHelp">
   Comandi: A = Sinistra | W = Su' | S = Giu' | D = Destra
@@ -136,6 +136,12 @@
     let score = 0;
     let highScore = parseInt(localStorage.getItem("highScore_snake") || "0");
     highScoreEl.textContent = highScore;
+
+      function backToMenu() {
+      gameContainer.style.display = "none";
+      clearInterval(window.snakeLoop);
+      window.location.href = "index.html";
+    }
 
     function startSnake() {
 	overlay.style.display = "none";
