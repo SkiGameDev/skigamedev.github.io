@@ -124,7 +124,6 @@
   <div id="scoreBoard">
     Punteggio: <span id="score">0</span> | Migliore: <span id="highScore">0</span>
   </div>
-      <div id="backMsg">Premi ESC per tornare al menu</div>
 	
 	    <div id="controlsHelp">
   Comandi: A = Sinistra | W = Su' | S = Giu' | D = Destra
@@ -220,12 +219,6 @@
     }
 	
 	startSnake();
-
-	      document.addEventListener("keydown", function(e) {
-      if (e.key === "Escape") {
-        window.location.href = "index.html"; // carica index.html dallo stesso progetto
-      }
-    });
   </script>
 </body>
 </html>
