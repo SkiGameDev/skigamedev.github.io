@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>SkiStation2000 – Tetris</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: linear-gradient(135deg, #0a0a0a, #1a1a1a);
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
+    }
+
+    .game-container {
+      position: relative;
+      margin-top: 50px;
+    }
+
+    canvas {
+      background: #222;
+      border: 3px solid #00c7ff;
+      border-radius: 6px;
+    }
+
+    #overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      background-color: rgba(0,0,0,0.85);
+      padding: 30px 50px;
+      border-radius: 12px;
+      border: 2px solid #00c7ff;
+      z-index: 10;
+      box-shadow: 0 0 20px #00c7ff;
+    }
+
+    #overlay h2 {
+      font-size: 22px;
+      color: #ff4d4d;
+      text-shadow: 0 0 6px red;
+      margin-bottom: 15px;
+    }
+
+    #restartBtn {
+      padding: 10px 20px;
+      background: #00c7ff;
+      color: black;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #restartBtn:hover {
+      background: #009ed4;
+    }
+
+    #scoreBoard {
+      text-align: center;
+      font-size: 18px;
+      color: #00c7ff;
+      text-shadow: 0 0 4px #00c7ff;
+      margin-top: 15px;
+    }
+	
+	#controlsHelp {
+	  font-size: 14px;
+	  color: #ccc;
+	  margin-top: 5px;
+	  text-align: center;
+	  font-family: monospace;
+	}
+
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <canvas id="tetrisCanvas" width="200" height="400"></canvas>
+    <div id="overlay">
+      <h2>Game Over</h2>
+      <button id="restartBtn" onclick="start()">Ricomincia</button>
+    </div>
+  </div>
+  <div id="scoreBoard">
+    Punteggio: <span id="score">0</span> | Migliore: <span id="highScore">0</span>
+  </div>
+
+  <div id="controlsHelp">
+  Comandi: A = Sinistra | D = Destra | S = Giù | SPACE = Ruota
+</div>
+  
+  <script>
+    const canvas = document.getElementById("tetrisCanvas");
+    const ctx = canvas.getContext("2d");
+    const overlay = document.getElementById("overlay");
+    const scoreEl = document.getElementById("score");
+    const highScoreEl = document.getElementById("highScore");
+
+    const ROWS = 20, COLS = 10, BLOCK_SIZE = 20;
+    const colors = ["#00c7ff", "#00aaff", "#0088ff", "#0066cc", "#0044aa", "#002288", "#00e0ff"];
+    const shapes = {
+      I: [[1, 1, 1, 1]],
+      O: [[1, 1], [1, 1]],
+      T: [[0,1,0],[1,1,1]],
+      S: [[0,1,1],[1,1,0]],
+      Z: [[1,1,0],[0,1,1]],
+      J: [[1,0,0],[1,1,1]],
+      L: [[0,0,1],[1,1,1]]
+    };
+
+    let grid, current, next, dropInterval, dropCounter, lastTime = 0, score = 0;
+    let highScore = parseInt(localStorage.getItem("highScore_tetris") || "0");
+    highScoreEl.textContent = highScore;
+
+    function resetGame() {
+      grid = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+      current = randomPiece();
+      next = randomPiece();
+      dropInterval = 1000;
+      dropCounter = 0;
+      score = 0;
+      scoreEl.textContent = score;
+      overlay.style.display = "none";
+    }
+
+    function randomPiece() {
+      const types = Object.keys(shapes);
+      const shape = shapes[types[Math.floor(Math.random() * types.length)]];
+      return {
+        x: Math.floor(COLS / 2) - Math.floor(shape[0].length / 2),
+        y: 0,
+        shape: shape,
+        color: colors[Math.floor(Math.random() * colors.length)]
+      };
+    }
+
+    function drawBlock(x, y, color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
+    }
+
+    function drawMatrix(matrix, offset, color) {
+      matrix.forEach((row, y) => {
+        row.forEach((val, x) => {
+          if (val) drawBlock(x + offset.x, y + offset.y, color);
+        });
+      });
+    }
+
+    function drawGrid() {
+      for (let y = 0; y < ROWS; y++) {
+        for (let x = 0; x < COLS; x++) {
+          const val = grid[y][x];
+          if (val) drawBlock(x, y, val);
+        }
+      }
+    }
+
+    function collide() {
+      return current.shape.some((row, dy) => {
+        return row.some((val, dx) => {
+          if (val) {
+            let x = current.x + dx;
+            let y = current.y + dy;
+            return (
+              x < 0 || x >= COLS || y >= ROWS || (grid[y] && grid[y][x])
+            );
+          }
+        });
+      });
+    }
+
+    function merge() {
+      current.shape.forEach((row, y) => {
+        row.forEach((val, x) => {
+          if (val && grid[current.y + y] && grid[current.y + y][current.x + x] === null) {
+            grid[current.y + y][current.x + x] = current.color;
+          }
+        });
+      });
+    }
+
+	function clearLines() {
+	  let linesCleared = 0;
+	  for (let y = ROWS - 1; y >= 0; y--) {
+		if (grid[y].every(cell => cell)) {
+		  grid.splice(y, 1);
+		  grid.unshift(Array(COLS).fill(null));
+		  linesCleared++;
+		  y++; // Ricontrolla la stessa riga dopo lo shift
+		}
+	  }
+
+	  if (linesCleared > 0) {
+		score += linesCleared;
+		scoreEl.textContent = score;
+		if (score > highScore) {
+		  highScore = score;
+		  localStorage.setItem("highScore_tetris", highScore);
+		  highScoreEl.textContent = highScore;
+		}
+		dropInterval = Math.max(100, dropInterval - 20 * linesCleared);
+	  }
+	}
+
+
+    function rotate(matrix) {
+      return matrix[0].map((_, i) => matrix.map(row => row[i])).reverse();
+    }
+
+    function playerDrop() {
+      current.y++;
+      if (collide()) {
+        current.y--;
+        merge();
+        clearLines();
+        current = next;
+        next = randomPiece();
+        if (collide()) {
+          overlay.style.display = "flex";
+          return;
+        }
+      }
+      dropCounter = 0;
+    }
+
+    function update(time = 0) {
+      const delta = time - lastTime;
+      lastTime = time;
+      dropCounter += delta;
+      if (dropCounter > dropInterval) {
+        playerDrop();
+      }
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawGrid();
+      drawMatrix(current.shape, { x: current.x, y: current.y }, current.color);
+      requestAnimationFrame(update);
+    }
+
+    document.addEventListener("keydown", e => {
+      if (e.key === "a" || e.key === "A") {
+        current.x--;
+        if (collide()) current.x++;
+      } else if (e.key === "d" || e.key === "D") {
+        current.x++;
+        if (collide()) current.x--;
+      } else if (e.key === "s" || e.key === "S") {
+        playerDrop();
+      } else if (e.key === " " || e.key === "Spacebar") {
+        const rotated = rotate(current.shape);
+        const old = current.shape;
+        current.shape = rotated;
+        if (collide()) current.shape = old;
+      }
+    });
+
+    function start() {
+      resetGame();
+      update();
+    }
+
+    start();
+  </script>
+</body>
+</html>

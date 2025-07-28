@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>SkiStation2000 – Pong</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: linear-gradient(135deg, #0a0a0a, #1a1a1a);
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
+    }
+
+    .game-container {
+      position: relative;
+      margin-top: 50px;
+    }
+
+    canvas {
+      background: #222;
+      border: 3px solid #00c7ff;
+      border-radius: 6px;
+      display: block;
+    }
+
+    #overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      background-color: rgba(0,0,0,0.85);
+      padding: 30px 50px;
+      border-radius: 12px;
+      border: 2px solid #00c7ff;
+      z-index: 10;
+      box-shadow: 0 0 20px #00c7ff;
+    }
+
+    #overlay h2 {
+      font-size: 22px;
+      color: #ff4d4d;
+      text-shadow: 0 0 6px red;
+      margin-bottom: 15px;
+    }
+
+    #restartBtn {
+      padding: 10px 20px;
+      background: #00c7ff;
+      color: black;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #restartBtn:hover {
+      background: #009ed4;
+    }
+
+    #scoreBoard {
+      text-align: center;
+      font-size: 18px;
+      color: #00c7ff;
+      text-shadow: 0 0 4px #00c7ff;
+      margin-top: 15px;
+    }
+	
+	#controlsHelp {
+	  font-size: 14px;
+	  color: #ccc;
+	  margin-top: 5px;
+	  text-align: center;
+	  font-family: monospace;
+	}
+
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <canvas id="pongCanvas" width="500" height="400"></canvas>
+
+    <div id="overlay">
+      <h2>Game Over</h2>
+      <button id="restartBtn" onclick="startPong()">Ricomincia</button>
+    </div>
+  </div>
+
+  <div id="scoreBoard">
+    Punteggio: <span id="score">0</span> | Migliore: <span id="highScore">0</span>
+  </div>
+  
+    <div id="controlsHelp">
+  Comandi: W = Su | S = Giu'
+</div>
+
+  <script>
+    const canvas = document.getElementById("pongCanvas");
+    const ctx = canvas.getContext("2d");
+    const overlay = document.getElementById("overlay");
+    const scoreEl = document.getElementById("score");
+    const highScoreEl = document.getElementById("highScore");
+
+    let player, ai, ball, keys, loop;
+    let score = 0;
+    let highScore = parseInt(localStorage.getItem("highScore_pong") || "0");
+    highScoreEl.textContent = highScore;
+
+    function startPong() {
+      overlay.style.display = "none";
+      score = 0;
+      scoreEl.textContent = 0;
+      ball = { x: 250, y: 200, vx: 4, vy: 2, r: 10 };
+      player = { x: 20, y: 150, w: 10, h: 100, speed: 5 };
+      ai = { x: 470, y: 150, w: 10, h: 100 };
+      keys = { up: false, down: false };
+
+      if (loop) cancelAnimationFrame(loop);
+      requestAnimationFrame(draw);
+    }
+
+    document.addEventListener("keydown", e => {
+      if (e.key === "w" || e.key === "W") keys.up = true;
+      if (e.key === "s" || e.key === "S") keys.down = true;
+    });
+    document.addEventListener("keyup", e => {
+      if (e.key === "w" || e.key === "W") keys.up = false;
+      if (e.key === "s" || e.key === "S") keys.down = false;
+    });
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (keys.up) player.y -= player.speed;
+      if (keys.down) player.y += player.speed;
+      player.y = Math.max(0, Math.min(canvas.height - player.h, player.y));
+
+      if (ball.y < ai.y + ai.h / 2) ai.y -= 3;
+      else if (ball.y > ai.y + ai.h / 2) ai.y += 3;
+
+      ball.x += ball.vx;
+      ball.y += ball.vy;
+
+      if (ball.y < 0 || ball.y > canvas.height) ball.vy *= -1;
+
+      if (checkCollision(ball, player)) {
+        ball.vx *= -1.1;
+        ball.vy *= 1.05;
+        score++;
+        scoreEl.textContent = score;
+        if (score > highScore) {
+          highScore = score;
+          localStorage.setItem("highScore_pong", highScore);
+          highScoreEl.textContent = highScore;
+        }
+      }
+
+      if (checkCollision(ball, ai)) {
+        ball.vx *= -1.05;
+        ball.vy *= 1.05;
+      }
+
+      if (ball.x < 0 || ball.x > canvas.width) {
+        overlay.style.display = "block";
+        return;
+      }
+
+      ctx.fillStyle = "#0ff";
+      ctx.fillRect(player.x, player.y, player.w, player.h);
+      ctx.fillRect(ai.x, ai.y, ai.w, ai.h);
+
+      ctx.beginPath();
+      ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+      ctx.fillStyle = "#00c7ff";
+      ctx.fill();
+
+      loop = requestAnimationFrame(draw);
+    }
+
+    function checkCollision(b, p) {
+      return b.x - b.r < p.x + p.w && b.x + b.r > p.x &&
+             b.y + b.r > p.y && b.y - b.r < p.y + p.h;
+    }
+
+    startPong();
+  </script>
+</body>
+</html>

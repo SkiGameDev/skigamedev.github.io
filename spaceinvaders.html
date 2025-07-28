@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>SkiStation2000 – Space Invaders</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: linear-gradient(135deg, #0a0a0a, #1a1a1a);
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
+    }
+
+    .game-container {
+      position: relative;
+      margin-top: 50px;
+    }
+
+    canvas {
+      background: #222;
+      border: 3px solid #00c7ff;
+      border-radius: 6px;
+      display: block;
+    }
+
+    #overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      background-color: rgba(0,0,0,0.85);
+      padding: 30px 50px;
+      border-radius: 12px;
+      border: 2px solid #00c7ff;
+      z-index: 10;
+      box-shadow: 0 0 20px #00c7ff;
+    }
+
+    #overlay h2 {
+      font-size: 22px;
+      color: #ff4d4d;
+      text-shadow: 0 0 6px red;
+      margin-bottom: 15px;
+    }
+
+    #restartBtn {
+      padding: 10px 20px;
+      background: #00c7ff;
+      color: black;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #restartBtn:hover {
+      background: #009ed4;
+    }
+
+    #scoreBoard {
+      text-align: center;
+      font-size: 18px;
+      color: #00c7ff;
+      text-shadow: 0 0 4px #00c7ff;
+      margin-top: 15px;
+    }
+	
+		#controlsHelp {
+	  font-size: 14px;
+	  color: #ccc;
+	  margin-top: 5px;
+	  text-align: center;
+	  font-family: monospace;
+	}
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <canvas id="gameCanvas" width="500" height="400"></canvas>
+
+    <div id="overlay">
+      <h2>Game Over</h2>
+      <button id="restartBtn" onclick="startGame()">Ricomincia</button>
+    </div>
+  </div>
+
+  <div id="scoreBoard">
+    Punteggio: <span id="score">0</span> | Migliore: <span id="highScore">0</span>
+  </div>
+  
+<div id="controlsHelp">
+  Comandi: A = Sinistra | D = Destra | SPACE = Spara
+</div>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const overlay = document.getElementById("overlay");
+    const scoreEl = document.getElementById("score");
+    const highScoreEl = document.getElementById("highScore");
+
+    let player, bullets, enemies, keys, loop, score = 0, spawnTimer = 0, spawnInterval = 100;
+    let highScore = parseInt(localStorage.getItem("highScore_invaders") || "0");
+    highScoreEl.textContent = highScore;
+
+    function startGame() {
+      overlay.style.display = "none";
+      score = 0;
+      scoreEl.textContent = 0;
+
+      player = { x: 220, y: 360, w: 30, h: 30 };
+      bullets = [];
+      enemies = [];
+      keys = { left: false, right: false, space: false };
+      spawnTimer = 0;
+      spawnInterval = 100;
+
+      if (loop) cancelAnimationFrame(loop);
+      requestAnimationFrame(update);
+    }
+
+    document.addEventListener("keydown", e => {
+      if (e.key === "a" || e.key === "A") keys.left = true;
+      if (e.key === "d" || e.key === "D") keys.right = true;
+      if (e.code === "Space") keys.space = true;
+    });
+
+    document.addEventListener("keyup", e => {
+      if (e.key === "a" || e.key === "A") keys.left = false;
+      if (e.key === "d" || e.key === "D") keys.right = false;
+      if (e.code === "Space") keys.space = false;
+    });
+
+    let shootCooldown = 0;
+
+    function update() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Player movement
+      if (keys.left) player.x -= 5;
+      if (keys.right) player.x += 5;
+      player.x = Math.max(0, Math.min(canvas.width - player.w, player.x));
+
+      // Player draw
+      ctx.beginPath();
+	ctx.moveTo(player.x + player.w / 2, player.y);                  // punta
+	ctx.lineTo(player.x, player.y + player.h);                      // sinistra
+	ctx.lineTo(player.x + player.w, player.y + player.h);           // destra
+	ctx.closePath();
+	ctx.fillStyle = "#00c7ff";
+	ctx.fill();
+
+      // Shoot
+      if (keys.space && shootCooldown <= 0) {
+        bullets.push({ x: player.x + player.w / 2 - 2, y: player.y - 8 });
+        shootCooldown = 15;
+      }
+      shootCooldown--;
+
+      // Bullets update
+      bullets = bullets.filter(b => b.y > -10);
+      bullets.forEach(b => {
+        b.y -= 6;
+        ctx.fillRect(b.x, b.y, 4, 10);
+      });
+
+      // Spawn enemies
+      spawnTimer++;
+      if (spawnTimer >= spawnInterval) {
+        let x = Math.random() * (canvas.width - 40);
+        enemies.push({ x, y: -20, w: 30, h: 30, speed: 1 + score * 0.05 });
+        spawnTimer = 0;
+        if (spawnInterval > 30) spawnInterval -= 1; // più spawn col tempo
+      }
+
+      // Enemies update
+      for (let enemy of enemies) {
+        enemy.y += enemy.speed;
+        ctx.beginPath();
+		const cx = enemy.x + enemy.w / 2;
+		const cy = enemy.y + enemy.h / 2;
+		const radius = enemy.w / 2;
+		for (let i = 0; i < 6; i++) {
+		  const angle = Math.PI / 3 * i;
+		  const px = cx + radius * Math.cos(angle);
+		  const py = cy + radius * Math.sin(angle);
+		  i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+		}
+		ctx.closePath();
+		ctx.fillStyle = "#00c7ff";
+		ctx.fill();
+
+        // Game over if enemy reaches bottom
+        if (enemy.y + enemy.h >= player.y) {
+          gameOver();
+          return;
+        }
+      }
+
+      // Collisions
+      bullets.forEach(b => {
+        enemies.forEach(e => {
+          if (
+            b.x < e.x + e.w && b.x + 4 > e.x &&
+            b.y < e.y + e.h && b.y + 10 > e.y
+          ) {
+            e.hit = true;
+            b.y = -999;
+            score++;
+            scoreEl.textContent = score;
+
+            if (score > highScore) {
+              highScore = score;
+              localStorage.setItem("highScore_invaders", highScore);
+              highScoreEl.textContent = highScore;
+            }
+          }
+        });
+      });
+
+      enemies = enemies.filter(e => !e.hit);
+
+      loop = requestAnimationFrame(update);
+    }
+
+    function gameOver() {
+      overlay.style.display = "flex";
+      cancelAnimationFrame(loop);
+    }
+
+    startGame();
+  </script>
+</body>
+</html>
